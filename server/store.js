@@ -1,4 +1,11 @@
-const feedback = [
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const DATA_FILE = path.join(__dirname, 'data.json')
+
+const SEED_FEEDBACK = [
   {
     id: '1',
     title: 'Login page is slow on mobile',
@@ -43,13 +50,34 @@ const feedback = [
   },
 ]
 
-const commentsByFeedbackId = {
+const SEED_COMMENTS = {
   '1': [
     { id: 'c1', text: 'Reproduced on iOS Safari. Investigating.', createdAt: '2025-02-20T11:00:00Z' },
   ],
   '3': [
     { id: 'c2', text: 'Fixed in v2.1.0. We now stream the export.', createdAt: '2025-02-19T10:00:00Z' },
   ],
+}
+
+function loadData() {
+  try {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8')
+    return JSON.parse(raw)
+  } catch {
+    return { feedback: SEED_FEEDBACK, commentsByFeedbackId: SEED_COMMENTS }
+  }
+}
+
+const store = loadData()
+const feedback = store.feedback
+const commentsByFeedbackId = store.commentsByFeedbackId
+
+function persist() {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ feedback, commentsByFeedbackId }, null, 2), 'utf8')
+  } catch (err) {
+    console.error('Failed to persist data to disk:', err)
+  }
 }
 
 function getFeedback() {
@@ -65,12 +93,11 @@ function getFeedbackById(id) {
 function updateFeedbackStatus(id, status) {
   const index = feedback.findIndex((f) => f.id === id)
   if (index === -1) throw new Error('Feedback not found')
-  const updated = { ...feedback[index], status }
-  // Only persist if status actually changed to avoid unnecessary writes
-  if (updated.status !== status) {
-    feedback[index] = updated
+  if (feedback[index].status !== status) {
+    feedback[index] = { ...feedback[index], status }
+    persist()
   }
-  return updated
+  return feedback[index]
 }
 
 function getComments(feedbackId) {
@@ -80,9 +107,8 @@ function getComments(feedbackId) {
 function addComment(feedbackId, text) {
   const id = `c${Date.now()}`
   const comment = { id, text, createdAt: new Date().toISOString() }
-  const list = commentsByFeedbackId[feedbackId] ? [...commentsByFeedbackId[feedbackId]] : []
-  list.push(comment)
-  commentsByFeedbackId[feedbackId] = list
+  commentsByFeedbackId[feedbackId] = [...(commentsByFeedbackId[feedbackId] || []), comment]
+  persist()
   return comment
 }
 
