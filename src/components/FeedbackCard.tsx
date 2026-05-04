@@ -44,7 +44,7 @@ export function FeedbackCard({
       setAddingTag(false)
       setTagError(false)
     } catch {
-      // ignore
+      setTagError(true)
     }
   }
 

@@ -71,6 +71,7 @@ function getFeedbackById(id) {
 function updateFeedbackStatus(id, status) {
   const index = feedback.findIndex((f) => f.id === id)
   if (index === -1) throw new Error('Feedback not found')
+  if (feedback[index].status === status) return feedback[index]
   const updated = { ...feedback[index], status }
   feedback[index] = updated
   return updated
