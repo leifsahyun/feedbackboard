@@ -4,6 +4,7 @@ import {
   getFeedback,
   getFeedbackById,
   updateFeedbackStatus,
+  updateFeedbackPriority,
   getComments,
   addComment,
 } from './store.js'
@@ -43,6 +44,22 @@ app.patch('/api/feedback/:id', asyncHandler((req, res) => {
   }
   try {
     const updated = updateFeedbackStatus(req.params.id, status)
+    res.json(updated)
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
+}))
+
+app.patch('/api/feedback/:id/priority', asyncHandler((req, res) => {
+  const { priority } = req.body
+  if (!priority) {
+    return res.status(400).json({ error: 'priority is required' })
+  }
+  if (priority !== 'low' && priority !== 'medium' && priority !== 'high') {
+    return res.status(400).json({ error: 'priority must be "low", "medium", or "high"' })
+  }
+  try {
+    const updated = updateFeedbackPriority(req.params.id, priority)
     res.json(updated)
   } catch (err) {
     res.status(404).json({ error: err.message })

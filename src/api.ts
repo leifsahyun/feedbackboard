@@ -1,4 +1,4 @@
-import type { Feedback, Comment } from './types'
+import type { Feedback, Comment, FeedbackPriority } from './types'
 
 const BASE = '/api'
 
@@ -21,6 +21,16 @@ export async function updateStatus(id: string, status: 'Active' | 'Resolved'): P
     body: JSON.stringify({ status }),
   })
   if (!res.ok) throw new Error('Failed to update status')
+  return res.json()
+}
+
+export async function updatePriority(id: string, priority: FeedbackPriority): Promise<Feedback> {
+  const res = await fetch(`${BASE}/feedback/${id}/priority`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ priority }),
+  })
+  if (!res.ok) throw new Error('Failed to update priority')
   return res.json()
 }
 

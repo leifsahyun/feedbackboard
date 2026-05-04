@@ -5,17 +5,20 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import List from '@mui/material/List'
 import Box from '@mui/material/Box'
-import type { Feedback } from '../types'
-import { updateStatus } from '../api'
+import type { Feedback, FeedbackPriority } from '../types'
+import { updateStatus, updatePriority } from '../api'
 import { FeedbackCard } from './FeedbackCard'
 
 type FilterValue = 'all' | 'Active' | 'Resolved'
+
+const PRIORITY_ORDER: Record<FeedbackPriority, number> = { high: 3, medium: 2, low: 1 }
 
 interface FeedbackListProps {
   feedback: Feedback[]
   selectedId: string | null
   onSelect: (id: string | null) => void
   onStatusUpdated: (id: string, status: 'Active' | 'Resolved') => void
+  onPriorityUpdated: (id: string, priority: FeedbackPriority) => void
 }
 
 export function FeedbackList({
@@ -23,6 +26,7 @@ export function FeedbackList({
   selectedId,
   onSelect,
   onStatusUpdated,
+  onPriorityUpdated,
 }: FeedbackListProps) {
   const [filter, setFilter] = useState<FilterValue>('all')
 
@@ -33,7 +37,11 @@ export function FeedbackList({
 
   const sortedAndFiltered = useMemo(() => {
     const list = [...filtered]
-    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    list.sort((a, b) => {
+      const priorityDiff = PRIORITY_ORDER[b.priority] - PRIORITY_ORDER[a.priority]
+      if (priorityDiff !== 0) return priorityDiff
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
     return list
   }, [filtered])
 
@@ -50,6 +58,15 @@ export function FeedbackList({
     try {
       const updated = await updateStatus(id, 'Active')
       onStatusUpdated(id, updated.status)
+    } catch {
+      // TODO handle error
+    }
+  }
+
+  const handlePriorityChange = async (id: string, priority: FeedbackPriority) => {
+    try {
+      const updated = await updatePriority(id, priority)
+      onPriorityUpdated(id, updated.priority)
     } catch {
       // TODO handle error
     }
@@ -78,6 +95,7 @@ export function FeedbackList({
             onSelect={() => onSelect(item.id)}
             onMarkResolved={() => handleMarkResolved(item.id)}
             onReopen={() => handleReopen(item.id)}
+            onPriorityChange={(priority) => handlePriorityChange(item.id, priority)}
           />
         ))}
       </List>

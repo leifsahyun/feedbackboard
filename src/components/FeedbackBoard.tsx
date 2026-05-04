@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
-import type { Feedback } from '../types'
-import { updateStatus } from '../api'
+import type { Feedback, FeedbackPriority } from '../types'
+import { updateStatus, updatePriority } from '../api'
 import { FeedbackCard } from './FeedbackCard'
 
 interface FeedbackBoardProps {
@@ -10,6 +10,7 @@ interface FeedbackBoardProps {
   selectedId: string | null
   onSelect: (id: string | null) => void
   onStatusUpdated: (id: string, status: 'Active' | 'Resolved') => void
+  onPriorityUpdated: (id: string, priority: FeedbackPriority) => void
 }
 
 const COLUMNS: { id: 'Active' | 'Resolved'; label: string }[] = [
@@ -17,11 +18,14 @@ const COLUMNS: { id: 'Active' | 'Resolved'; label: string }[] = [
   { id: 'Resolved', label: 'Resolved' },
 ]
 
+const PRIORITY_ORDER: Record<FeedbackPriority, number> = { high: 3, medium: 2, low: 1 }
+
 export function FeedbackBoard({
   feedback,
   selectedId,
   onSelect,
   onStatusUpdated,
+  onPriorityUpdated,
 }: FeedbackBoardProps) {
   const handleMarkResolved = async (id: string) => {
     try {
@@ -41,6 +45,15 @@ export function FeedbackBoard({
     }
   }
 
+  const handlePriorityChange = async (id: string, priority: FeedbackPriority) => {
+    try {
+      const updated = await updatePriority(id, priority)
+      onPriorityUpdated(id, updated.priority)
+    } catch {
+      // TODO handle error
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -55,7 +68,11 @@ export function FeedbackBoard({
       {COLUMNS.map(({ id: status, label }) => {
         const items = feedback
           .filter((f) => f.status === status)
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a, b) => {
+            const priorityDiff = PRIORITY_ORDER[b.priority] - PRIORITY_ORDER[a.priority]
+            if (priorityDiff !== 0) return priorityDiff
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          })
         return (
           <Paper
             key={status}
@@ -102,6 +119,7 @@ export function FeedbackBoard({
                   onSelect={() => onSelect(item.id)}
                   onMarkResolved={() => handleMarkResolved(item.id)}
                   onReopen={() => handleReopen(item.id)}
+                  onPriorityChange={(priority) => handlePriorityChange(item.id, priority)}
                 />
               ))}
               {items.length === 0 && (

@@ -5,7 +5,7 @@ import Container from '@mui/material/Container'
 import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
 import { fetchFeedback } from './api'
-import type { Feedback } from './types'
+import type { Feedback, FeedbackPriority } from './types'
 import { FeedbackBoard } from './components/FeedbackBoard'
 import { FeedbackDetail } from './components/FeedbackDetail'
 
@@ -26,6 +26,12 @@ export default function App() {
   const handleStatusUpdated = (id: string, status: 'Active' | 'Resolved') => {
     setFeedback((prev) =>
       prev.map((f) => (f.id === id ? { ...f, status } : f))
+    )
+  }
+
+  const handlePriorityUpdated = (id: string, priority: FeedbackPriority) => {
+    setFeedback((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, priority } : f))
     )
   }
 
@@ -69,6 +75,7 @@ export default function App() {
           selectedId={selectedId}
           onSelect={setSelectedId}
           onStatusUpdated={handleStatusUpdated}
+          onPriorityUpdated={handlePriorityUpdated}
         />
       </Container>
       <Drawer
