@@ -10,6 +10,7 @@ interface FeedbackBoardProps {
   selectedId: string | null
   onSelect: (id: string | null) => void
   onStatusUpdated: (id: string, status: 'Active' | 'Resolved') => void
+  onTagAdded: (id: string, updatedItem: Feedback) => void
 }
 
 const COLUMNS: { id: 'Active' | 'Resolved'; label: string }[] = [
@@ -22,6 +23,7 @@ export function FeedbackBoard({
   selectedId,
   onSelect,
   onStatusUpdated,
+  onTagAdded,
 }: FeedbackBoardProps) {
   const handleMarkResolved = async (id: string) => {
     try {
@@ -102,6 +104,7 @@ export function FeedbackBoard({
                   onSelect={() => onSelect(item.id)}
                   onMarkResolved={() => handleMarkResolved(item.id)}
                   onReopen={() => handleReopen(item.id)}
+                  onTagAdded={onTagAdded}
                 />
               ))}
               {items.length === 0 && (

@@ -6,6 +6,7 @@ export interface Feedback {
   description: string
   status: FeedbackStatus
   createdAt: string
+  tags: string[]
 }
 
 export interface Comment {

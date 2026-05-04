@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'
 import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
+import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
 import { fetchFeedback } from './api'
 import type { Feedback } from './types'
 import { FeedbackBoard } from './components/FeedbackBoard'
@@ -13,6 +15,7 @@ export default function App() {
   const [feedback, setFeedback] = useState<Feedback[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [tagFilter, setTagFilter] = useState('')
 
   useEffect(() => {
     fetchFeedback()
@@ -28,6 +31,20 @@ export default function App() {
       prev.map((f) => (f.id === id ? { ...f, status } : f))
     )
   }
+
+  const handleTagAdded = (_id: string, updatedItem: Feedback) => {
+    setFeedback((prev) =>
+      prev.map((f) => (f.id === updatedItem.id ? updatedItem : f))
+    )
+  }
+
+  const filteredFeedback = useMemo(() => {
+    const trimmed = tagFilter.trim().toLowerCase()
+    if (!trimmed) return feedback
+    return feedback.filter((f) =>
+      f.tags.some((t) => t.toLowerCase().includes(trimmed))
+    )
+  }, [feedback, tagFilter])
 
   return (
     <>
@@ -64,11 +81,25 @@ export default function App() {
             <Typography>{error}</Typography>
           </Box>
         )}
+        <TextField
+          size="small"
+          placeholder="Filter by tag…"
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          sx={{ mb: 2, width: 260 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">#</InputAdornment>
+            ),
+          }}
+          inputProps={{ 'aria-label': 'Filter by tag' }}
+        />
         <FeedbackBoard
-          feedback={feedback}
+          feedback={filteredFeedback}
           selectedId={selectedId}
           onSelect={setSelectedId}
           onStatusUpdated={handleStatusUpdated}
+          onTagAdded={handleTagAdded}
         />
       </Container>
       <Drawer

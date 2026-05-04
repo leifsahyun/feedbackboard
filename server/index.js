@@ -6,6 +6,7 @@ import {
   updateFeedbackStatus,
   getComments,
   addComment,
+  addTag,
 } from './store.js'
 
 const app = express()
@@ -43,6 +44,22 @@ app.patch('/api/feedback/:id', asyncHandler((req, res) => {
   }
   try {
     const updated = updateFeedbackStatus(req.params.id, status)
+    res.json(updated)
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
+}))
+
+app.post('/api/feedback/:id/tags', asyncHandler((req, res) => {
+  const { tag } = req.body
+  if (!tag || typeof tag !== 'string') {
+    return res.status(400).json({ error: 'tag is required' })
+  }
+  if (!tag.trim()) {
+    return res.status(400).json({ error: 'tag cannot be empty' })
+  }
+  try {
+    const updated = addTag(req.params.id, tag.trim())
     res.json(updated)
   } catch (err) {
     res.status(404).json({ error: err.message })

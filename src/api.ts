@@ -30,6 +30,16 @@ export async function fetchComments(feedbackId: string): Promise<Comment[]> {
   return res.json()
 }
 
+export async function addTag(feedbackId: string, tag: string): Promise<Feedback> {
+  const res = await fetch(`${BASE}/feedback/${feedbackId}/tags`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tag }),
+  })
+  if (!res.ok) throw new Error('Failed to add tag')
+  return res.json()
+}
+
 export async function addComment(feedbackId: string, text: string): Promise<Comment> {
   const res = await fetch(`${BASE}/feedback/${feedbackId}/comments`, {
     method: 'POST',

@@ -5,6 +5,7 @@ const feedback = [
     description: 'When I open the login page on my phone it takes 5+ seconds to become interactive.',
     status: 'Active',
     createdAt: '2025-02-20T10:00:00Z',
+    tags: ['performance', 'mobile'],
   },
   {
     id: '2',
@@ -12,6 +13,7 @@ const feedback = [
     description: 'The revenue chart on the dashboard sometimes shows a blank area until I refresh.',
     status: 'Active',
     createdAt: '2025-02-21T14:30:00Z',
+    tags: ['dashboard', 'bug'],
   },
   {
     id: '3',
@@ -19,6 +21,7 @@ const feedback = [
     description: 'Exporting more than 10k rows results in a timeout error.',
     status: 'Resolved',
     createdAt: '2025-02-18T09:15:00Z',
+    tags: ['export', 'bug'],
   },
   {
     id: '4',
@@ -26,6 +29,7 @@ const feedback = [
     description: 'The default notification sound is jarring. Can we have a volume setting?',
     status: 'Active',
     createdAt: '2025-02-22T11:00:00Z',
+    tags: ['notifications'],
   },
   {
     id: '5',
@@ -33,6 +37,7 @@ const feedback = [
     description: 'In dark mode, some text is hard to read against the background.',
     status: 'Resolved',
     createdAt: '2025-02-19T16:45:00Z',
+    tags: ['ui', 'accessibility'],
   },
   {
     id: '6',
@@ -40,6 +45,7 @@ const feedback = [
     description: 'When I navigate to page 2 of results, my filter selections are lost.',
     status: 'Active',
     createdAt: '2025-02-23T08:20:00Z',
+    tags: ['search', 'bug'],
   },
 ]
 
@@ -66,10 +72,17 @@ function updateFeedbackStatus(id, status) {
   const index = feedback.findIndex((f) => f.id === id)
   if (index === -1) throw new Error('Feedback not found')
   const updated = { ...feedback[index], status }
-  // Only persist if status actually changed to avoid unnecessary writes
-  if (updated.status !== status) {
-    feedback[index] = updated
-  }
+  feedback[index] = updated
+  return updated
+}
+
+function addTag(id, tag) {
+  const index = feedback.findIndex((f) => f.id === id)
+  if (index === -1) throw new Error('Feedback not found')
+  const item = feedback[index]
+  if (item.tags.includes(tag)) return item
+  const updated = { ...item, tags: [...item.tags, tag] }
+  feedback[index] = updated
   return updated
 }
 
@@ -92,4 +105,5 @@ export {
   updateFeedbackStatus,
   getComments,
   addComment,
+  addTag,
 }

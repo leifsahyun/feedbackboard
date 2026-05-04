@@ -16,6 +16,7 @@ interface FeedbackListProps {
   selectedId: string | null
   onSelect: (id: string | null) => void
   onStatusUpdated: (id: string, status: 'Active' | 'Resolved') => void
+  onTagAdded: (id: string, updatedItem: Feedback) => void
 }
 
 export function FeedbackList({
@@ -23,6 +24,7 @@ export function FeedbackList({
   selectedId,
   onSelect,
   onStatusUpdated,
+  onTagAdded,
 }: FeedbackListProps) {
   const [filter, setFilter] = useState<FilterValue>('all')
 
@@ -78,6 +80,7 @@ export function FeedbackList({
             onSelect={() => onSelect(item.id)}
             onMarkResolved={() => handleMarkResolved(item.id)}
             onReopen={() => handleReopen(item.id)}
+            onTagAdded={onTagAdded}
           />
         ))}
       </List>
